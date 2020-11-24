@@ -1,5 +1,6 @@
 #import "NativeStorage.h"
 #import <Cordova/CDVPlugin.h>
+#import "Vault12-Swift.h"
 
 @interface NativeStorage()
 @property NSUserDefaults *appGroupUserDefaults;
@@ -80,7 +81,8 @@
 		if(reference!=nil)
 		{
 			NSUserDefaults *defaults = [self getUserDefault];
-			[defaults setBool: aBoolean forKey:reference];
+            NSData *encryptedData = [CryptoUtils encryptWithClearText:[@(aBoolean) stringValue]];
+            [defaults setObject:encryptedData forKey:reference];
 			BOOL success = [defaults synchronize];
 			if(success) pluginResult = [CDVPluginResult resultWithStatus: CDVCommandStatus_OK messageAsBool:aBoolean];
 			else pluginResult = [CDVPluginResult resultWithStatus: CDVCommandStatus_ERROR messageAsString:@"Write has failed"];
@@ -95,19 +97,28 @@
 - (void) getBoolean: (CDVInvokedUrlCommand*) command
 {
 	[self.commandDelegate runInBackground:^{
-		CDVPluginResult* pluginResult = nil;
 		NSString* reference = [command.arguments objectAtIndex:0];
 
 		if(reference!=nil)
 		{
-			BOOL aBoolean = [[self getUserDefault] boolForKey:reference];
-			pluginResult = [CDVPluginResult resultWithStatus: CDVCommandStatus_OK messageAsBool:aBoolean];
+			NSData *encryptedData = [[self getUserDefault] dataForKey:reference];
+            if (encryptedData == nil) {
+                CDVPluginResult* pluginResult = [CDVPluginResult resultWithStatus: CDVCommandStatus_ERROR messageAsInt:2]; //Ref not found
+                [self.commandDelegate sendPluginResult:pluginResult callbackId: command.callbackId];
+            } else {
+                [CryptoUtils decryptWithCipherTextData:encryptedData completion:^(NSString * _Nullable decryptedString) {
+                    BOOL aBoolean = [decryptedString boolValue];
+                    CDVPluginResult* pluginResult = [CDVPluginResult resultWithStatus: CDVCommandStatus_OK messageAsBool:aBoolean];
+                    [self.commandDelegate sendPluginResult:pluginResult callbackId: command.callbackId];
+                }];
+            }
 		}
 		else
 		{
-			pluginResult = [CDVPluginResult resultWithStatus: CDVCommandStatus_ERROR messageAsString:@"Reference was null"];
+            CDVPluginResult* pluginResult = [CDVPluginResult resultWithStatus: CDVCommandStatus_ERROR messageAsString:@"Reference was null"];
+            [self.commandDelegate sendPluginResult:pluginResult callbackId: command.callbackId];
+
 		}
-		[self.commandDelegate sendPluginResult:pluginResult callbackId: command.callbackId];
 	}];
 }
 
@@ -121,7 +132,8 @@
 		if(reference!=nil)
 		{
 			NSUserDefaults *defaults = [self getUserDefault];
-			[defaults setInteger: anInt forKey:reference];
+            NSData *encryptedData = [CryptoUtils encryptWithClearText:[@(anInt) stringValue]];
+            [defaults setObject:encryptedData forKey:reference];
 			BOOL success = [defaults synchronize];
 			if(success) pluginResult = [CDVPluginResult resultWithStatus: CDVCommandStatus_OK messageAsNSInteger:anInt];
 			else pluginResult = [CDVPluginResult resultWithStatus: CDVCommandStatus_ERROR messageAsString:@"Write has failed"];
@@ -136,19 +148,26 @@
 - (void) getInt: (CDVInvokedUrlCommand*) command
 {
 	[self.commandDelegate runInBackground:^{
-		CDVPluginResult* pluginResult = nil;
 		NSString* reference = [command.arguments objectAtIndex:0];
-
 		if(reference!=nil)
 		{
-			NSInteger anInt = [[self getUserDefault] integerForKey:reference];
-			pluginResult = [CDVPluginResult resultWithStatus: CDVCommandStatus_OK messageAsNSInteger:anInt];
+            NSData *encryptedData = [[self getUserDefault] dataForKey:reference];
+            if (encryptedData == nil) {
+                CDVPluginResult* pluginResult = [CDVPluginResult resultWithStatus: CDVCommandStatus_ERROR messageAsInt:2]; //Ref not found
+                [self.commandDelegate sendPluginResult:pluginResult callbackId: command.callbackId];
+            } else {
+                [CryptoUtils decryptWithCipherTextData:encryptedData completion:^(NSString * _Nullable decryptedString) {
+                    NSInteger anInt = [decryptedString integerValue];
+                    CDVPluginResult* pluginResult = [CDVPluginResult resultWithStatus: CDVCommandStatus_OK messageAsNSInteger:anInt];
+                    [self.commandDelegate sendPluginResult:pluginResult callbackId: command.callbackId];
+                }];
+            }
 		}
 		else
 		{
-			pluginResult = [CDVPluginResult resultWithStatus: CDVCommandStatus_ERROR messageAsString:@"Reference was null"];
+            CDVPluginResult* pluginResult = [CDVPluginResult resultWithStatus: CDVCommandStatus_ERROR messageAsString:@"Reference was null"];
+            [self.commandDelegate sendPluginResult:pluginResult callbackId: command.callbackId];
 		}
-		[self.commandDelegate sendPluginResult:pluginResult callbackId: command.callbackId];
 	}];
 }
 
@@ -163,7 +182,8 @@
 		if(reference!=nil)
 		{
 			NSUserDefaults *defaults = [self getUserDefault];
-			[defaults setDouble: aDouble forKey:reference];
+            NSData *encryptedData = [CryptoUtils encryptWithClearText:[@(aDouble) stringValue]];
+            [defaults setObject:encryptedData forKey:reference];
 			BOOL success = [defaults synchronize];
 			if(success) pluginResult = [CDVPluginResult resultWithStatus: CDVCommandStatus_OK messageAsDouble:aDouble];
 			else pluginResult = [CDVPluginResult resultWithStatus: CDVCommandStatus_ERROR messageAsString:@"Write has failed"];
@@ -178,19 +198,27 @@
 - (void) getDouble: (CDVInvokedUrlCommand*) command
 {
 	[self.commandDelegate runInBackground:^{
-		CDVPluginResult* pluginResult = nil;
 		NSString* reference = [command.arguments objectAtIndex:0];
 
 		if(reference!=nil)
 		{
-			double aDouble = [[self getUserDefault] doubleForKey:reference];
-			pluginResult = [CDVPluginResult resultWithStatus: CDVCommandStatus_OK messageAsDouble:aDouble];
+            NSData *encryptedData = [[self getUserDefault] dataForKey:reference];
+            if (encryptedData == nil) {
+                CDVPluginResult* pluginResult = [CDVPluginResult resultWithStatus: CDVCommandStatus_ERROR messageAsInt:2]; //Ref not found
+                [self.commandDelegate sendPluginResult:pluginResult callbackId: command.callbackId];
+            } else {
+                [CryptoUtils decryptWithCipherTextData:encryptedData completion:^(NSString * _Nullable decryptedString) {
+                    double aDouble = [decryptedString doubleValue];
+                    CDVPluginResult* pluginResult = [CDVPluginResult resultWithStatus: CDVCommandStatus_OK messageAsDouble:aDouble];
+                    [self.commandDelegate sendPluginResult:pluginResult callbackId: command.callbackId];
+                }];
+            }
 		}
 		else
 		{
-			pluginResult = [CDVPluginResult resultWithStatus: CDVCommandStatus_ERROR messageAsString:@"Reference was null"];
+            CDVPluginResult* pluginResult = [CDVPluginResult resultWithStatus: CDVCommandStatus_ERROR messageAsString:@"Reference was null"];
+            [self.commandDelegate sendPluginResult:pluginResult callbackId: command.callbackId];
 		}
-		[self.commandDelegate sendPluginResult:pluginResult callbackId: command.callbackId];
 	}];
 }
 
@@ -204,7 +232,8 @@
 		if(reference!=nil)
 		{
 			NSUserDefaults *defaults = [self getUserDefault];
-			[defaults setObject: aString forKey:reference];
+            NSData *encryptedData = [CryptoUtils encryptWithClearText:aString];
+			[defaults setObject: encryptedData forKey:reference];
 			BOOL success = [defaults synchronize];
 			if(success) pluginResult = [CDVPluginResult resultWithStatus: CDVCommandStatus_OK messageAsString:aString];
 			else pluginResult = [CDVPluginResult resultWithStatus: CDVCommandStatus_ERROR messageAsString:@"Write has failed"];
@@ -220,19 +249,27 @@
 - (void) getString: (CDVInvokedUrlCommand*) command
 {
 	[self.commandDelegate runInBackground:^{
-		CDVPluginResult* pluginResult = nil;
 		NSString* reference = [command.arguments objectAtIndex:0];
 
 		if(reference!=nil)
 		{
-			NSString* aString = [[self getUserDefault] stringForKey:reference];
-			pluginResult = [CDVPluginResult resultWithStatus: CDVCommandStatus_OK messageAsString:aString];
+            NSData *encryptedData = [[self getUserDefault] dataForKey:reference];
+            if (encryptedData == nil) {
+                CDVPluginResult* pluginResult = [CDVPluginResult resultWithStatus: CDVCommandStatus_ERROR messageAsInt:2]; //Ref not found
+                [self.commandDelegate sendPluginResult:pluginResult callbackId: command.callbackId];
+            } else {
+                [CryptoUtils decryptWithCipherTextData:encryptedData completion:^(NSString * _Nullable aString) {
+                    CDVPluginResult* pluginResult = [CDVPluginResult resultWithStatus: CDVCommandStatus_OK messageAsString:aString];
+                    [self.commandDelegate sendPluginResult:pluginResult callbackId: command.callbackId];
+                }];
+            }
 		}
 		else
 		{
-			pluginResult = [CDVPluginResult resultWithStatus: CDVCommandStatus_ERROR messageAsString:@"Reference was null"];
+            CDVPluginResult *pluginResult = [CDVPluginResult resultWithStatus: CDVCommandStatus_ERROR messageAsString:@"Reference was null"];
+            [self.commandDelegate sendPluginResult:pluginResult callbackId: command.callbackId];
+
 		}
-		[self.commandDelegate sendPluginResult:pluginResult callbackId: command.callbackId];
 	}];
 }
 
@@ -251,7 +288,8 @@
 		else
 		{
 			NSUserDefaults *defaults = [self getUserDefault];
-			[defaults setObject: aString forKey:reference];
+            NSData *encryptedData = [CryptoUtils encryptWithClearText:aString];
+			[defaults setObject: encryptedData forKey:reference];
 			BOOL success = [defaults synchronize];
 			if(success) pluginResult = [CDVPluginResult resultWithStatus: CDVCommandStatus_OK messageAsString:aString];
 			else pluginResult = [CDVPluginResult resultWithStatus: CDVCommandStatus_ERROR messageAsInt:1]; //Write has failed
@@ -264,23 +302,26 @@
 - (void) getItem: (CDVInvokedUrlCommand*) command
 {
 	[self.commandDelegate runInBackground:^{
-		CDVPluginResult* pluginResult = nil;
 		NSString* reference = [command.arguments objectAtIndex:0];
 
 		if(reference!=nil)
 		{
-			NSString* aString = [[self getUserDefault] stringForKey:reference];
-			pluginResult = [CDVPluginResult resultWithStatus: CDVCommandStatus_OK messageAsString:aString];
-			if(aString==nil)
-			{
-				pluginResult = [CDVPluginResult resultWithStatus: CDVCommandStatus_ERROR messageAsInt:2]; //Ref not found
-			}
+            NSData *encryptedData = [[self getUserDefault] dataForKey:reference];
+            if (encryptedData == nil) {
+                CDVPluginResult* pluginResult = [CDVPluginResult resultWithStatus: CDVCommandStatus_ERROR messageAsInt:2]; //Ref not found
+                [self.commandDelegate sendPluginResult:pluginResult callbackId: command.callbackId];
+            } else {
+                [CryptoUtils decryptWithCipherTextData:encryptedData completion:^(NSString * _Nullable decryptedString) {
+                    CDVPluginResult* pluginResult = [CDVPluginResult resultWithStatus: CDVCommandStatus_OK messageAsString:decryptedString];
+                    [self.commandDelegate sendPluginResult:pluginResult callbackId: command.callbackId];
+                }];
+            }
 		}
 		else
 		{
-			pluginResult = [CDVPluginResult resultWithStatus: CDVCommandStatus_ERROR messageAsInt:3]; //Reference was null
+            CDVPluginResult* pluginResult = [CDVPluginResult resultWithStatus: CDVCommandStatus_ERROR messageAsInt:3]; //Reference was null
+            [self.commandDelegate sendPluginResult:pluginResult callbackId: command.callbackId];
 		}
-		[self.commandDelegate sendPluginResult:pluginResult callbackId: command.callbackId];
 	}];
 }
 

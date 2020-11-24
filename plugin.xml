@@ -1,12 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <plugin xmlns="http://apache.org/cordova/ns/plugins/1.0"
     xmlns:android="http://schemas.android.com/apk/res/android"
-    id="cordova-plugin-nativestorage"
-    version="2.3.2">
-    <name>NativeStorage</name>
-    <description>Native storage of variables in Android and iOS</description>
-    <license>Apache 2.0</license>
-    <keywords>cordova, native storage, LocalStorage, NSUserDefaults, SharedPreferences</keywords>
+    id="vault12.crypto-native-storage"
+    version="0.0.1">
+    <name>CryptoNativeStorage</name>
     <repo></repo>
     <issue></issue>
 
@@ -39,6 +36,7 @@
         </config-file>
         <header-file src="src/ios/NativeStorage.h"/>
         <source-file src="src/ios/NativeStorage.m"/>
+        <source-file src="src/ios/CryptoUtils.swift"/>
     </platform>
 
     <!-- Browser -->
