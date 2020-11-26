@@ -103,7 +103,7 @@
 		{
 			NSData *encryptedData = [[self getUserDefault] dataForKey:reference];
             if (encryptedData == nil) {
-                CDVPluginResult* pluginResult = [CDVPluginResult resultWithStatus: CDVCommandStatus_ERROR messageAsInt:2]; //Ref not found
+                CDVPluginResult* pluginResult = [CDVPluginResult resultWithStatus: CDVCommandStatus_OK messageAsBool:NO];
                 [self.commandDelegate sendPluginResult:pluginResult callbackId: command.callbackId];
             } else {
                 [CryptoUtils decryptWithCipherTextData:encryptedData completion:^(NSString * _Nullable decryptedString) {
@@ -153,7 +153,7 @@
 		{
             NSData *encryptedData = [[self getUserDefault] dataForKey:reference];
             if (encryptedData == nil) {
-                CDVPluginResult* pluginResult = [CDVPluginResult resultWithStatus: CDVCommandStatus_ERROR messageAsInt:2]; //Ref not found
+                CDVPluginResult* pluginResult = [CDVPluginResult resultWithStatus: CDVCommandStatus_OK messageAsNSInteger:0];
                 [self.commandDelegate sendPluginResult:pluginResult callbackId: command.callbackId];
             } else {
                 [CryptoUtils decryptWithCipherTextData:encryptedData completion:^(NSString * _Nullable decryptedString) {
@@ -204,7 +204,7 @@
 		{
             NSData *encryptedData = [[self getUserDefault] dataForKey:reference];
             if (encryptedData == nil) {
-                CDVPluginResult* pluginResult = [CDVPluginResult resultWithStatus: CDVCommandStatus_ERROR messageAsInt:2]; //Ref not found
+                CDVPluginResult* pluginResult = [CDVPluginResult resultWithStatus: CDVCommandStatus_OK messageAsDouble:0.0];
                 [self.commandDelegate sendPluginResult:pluginResult callbackId: command.callbackId];
             } else {
                 [CryptoUtils decryptWithCipherTextData:encryptedData completion:^(NSString * _Nullable decryptedString) {
@@ -255,7 +255,7 @@
 		{
             NSData *encryptedData = [[self getUserDefault] dataForKey:reference];
             if (encryptedData == nil) {
-                CDVPluginResult* pluginResult = [CDVPluginResult resultWithStatus: CDVCommandStatus_ERROR messageAsInt:2]; //Ref not found
+                CDVPluginResult* pluginResult = [CDVPluginResult resultWithStatus: CDVCommandStatus_OK messageAsString:nil];
                 [self.commandDelegate sendPluginResult:pluginResult callbackId: command.callbackId];
             } else {
                 [CryptoUtils decryptWithCipherTextData:encryptedData completion:^(NSString * _Nullable aString) {
