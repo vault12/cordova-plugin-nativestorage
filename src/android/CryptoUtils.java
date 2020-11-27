@@ -1,29 +1,36 @@
 import android.security.keystore.KeyGenParameterSpec;
+import android.security.keystore.KeyInfo;
 import android.security.keystore.KeyProperties;
 import android.util.Log;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.security.InvalidAlgorithmParameterException;
+import java.security.Key;
+import java.security.KeyFactory;
 import java.security.KeyStore;
 import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
 import java.security.NoSuchProviderException;
 import java.security.UnrecoverableEntryException;
+import java.security.UnrecoverableKeyException;
 import java.security.cert.CertificateException;
+import java.security.spec.InvalidKeySpecException;
 
 import javax.crypto.Cipher;
 import javax.crypto.KeyGenerator;
 import javax.crypto.SecretKey;
+import javax.crypto.SecretKeyFactory;
 import javax.crypto.spec.GCMParameterSpec;
 
 public class CryptoUtils {
 
+    private static final String ANDROID_KEY_STORE_PROVIDER = "AndroidKeyStore";
     private static final String KEY_ALIAS = "vault12.cryptonativestorage.keyalias.1";
-    public static final String DELIMITER = "@~@~@";
+    private static final String DELIMITER = "@~@~@";
 
     private static SecretKey generateKey() throws NoSuchProviderException, NoSuchAlgorithmException, InvalidAlgorithmParameterException {
-        final KeyGenerator keyGenerator = KeyGenerator.getInstance(KeyProperties.KEY_ALGORITHM_AES, "AndroidKeyStore");
+        final KeyGenerator keyGenerator = KeyGenerator.getInstance(KeyProperties.KEY_ALGORITHM_AES, ANDROID_KEY_STORE_PROVIDER);
         final KeyGenParameterSpec keyGenParameterSpec = new KeyGenParameterSpec.Builder(KEY_ALIAS,
                 KeyProperties.PURPOSE_ENCRYPT | KeyProperties.PURPOSE_DECRYPT)
                 .setBlockModes(KeyProperties.BLOCK_MODE_GCM)
@@ -38,7 +45,7 @@ public class CryptoUtils {
     }
 
     private static SecretKey loadKey() throws KeyStoreException, CertificateException, NoSuchAlgorithmException, IOException, UnrecoverableEntryException {
-        final KeyStore keyStore = KeyStore.getInstance("AndroidKeyStore");
+        final KeyStore keyStore = KeyStore.getInstance(ANDROID_KEY_STORE_PROVIDER);
         keyStore.load(null);
         final KeyStore.SecretKeyEntry secretKeyEntry = (KeyStore.SecretKeyEntry) keyStore.getEntry(KEY_ALIAS, null);
         if (secretKeyEntry != null) {
@@ -96,6 +103,16 @@ public class CryptoUtils {
         }
     }
 
+    public static void checkKeyIsHardwareBacked() throws KeyStoreException, CertificateException, NoSuchAlgorithmException, IOException, UnrecoverableKeyException, InvalidKeySpecException, NoSuchProviderException {
+        final KeyStore keyStore = KeyStore.getInstance(ANDROID_KEY_STORE_PROVIDER);
+        keyStore.load(null);
+        SecretKey key = (SecretKey)keyStore.getKey(KEY_ALIAS, null);
+        SecretKeyFactory factory = SecretKeyFactory.getInstance(key.getAlgorithm(), ANDROID_KEY_STORE_PROVIDER);
+        KeyInfo info = (KeyInfo)factory.getKeySpec(key, KeyInfo.class);
+        boolean isHardwareBacked = info.isInsideSecureHardware();
+        Log.w("CryptoUtils", "key is hardware backed: " + String.valueOf(isHardwareBacked));
+    }
+
     public static void test() {
         Log.w("CryptoUtils", "test");
         String text = "Hello world!";
@@ -103,5 +120,11 @@ public class CryptoUtils {
         Log.w("CryptoUtils", "encrypted: " + encrypted);
         String decrypted = decrypt(encrypted);
         Log.w("CryptoUtils", "decrypted: " + decrypted);
+
+        try {
+            checkKeyIsHardwareBacked();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 }
