@@ -103,28 +103,27 @@ public class CryptoUtils {
         }
     }
 
-    public static void checkKeyIsHardwareBacked() throws KeyStoreException, CertificateException, NoSuchAlgorithmException, IOException, UnrecoverableKeyException, InvalidKeySpecException, NoSuchProviderException {
-        final KeyStore keyStore = KeyStore.getInstance(ANDROID_KEY_STORE_PROVIDER);
-        keyStore.load(null);
-        SecretKey key = (SecretKey)keyStore.getKey(KEY_ALIAS, null);
-        SecretKeyFactory factory = SecretKeyFactory.getInstance(key.getAlgorithm(), ANDROID_KEY_STORE_PROVIDER);
-        KeyInfo info = (KeyInfo)factory.getKeySpec(key, KeyInfo.class);
-        boolean isHardwareBacked = info.isInsideSecureHardware();
+    public static boolean isCypherText(String value) {
+        return value.contains(DELIMITER);
+    }
+
+    public static boolean isKeyHardwareBacked() {
+        try {
+            final KeyStore keyStore = KeyStore.getInstance(ANDROID_KEY_STORE_PROVIDER);
+            keyStore.load(null);
+            SecretKey key = (SecretKey) keyStore.getKey(KEY_ALIAS, null);
+            SecretKeyFactory factory = SecretKeyFactory.getInstance(key.getAlgorithm(), ANDROID_KEY_STORE_PROVIDER);
+            KeyInfo info = (KeyInfo) factory.getKeySpec(key, KeyInfo.class);
+            return info.isInsideSecureHardware();
+        } catch (Exception e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
+
+    public static void checkKeyIsHardwareBacked() {
+        boolean isHardwareBacked = isKeyHardwareBacked();
         Log.w("CryptoUtils", "key is hardware backed: " + String.valueOf(isHardwareBacked));
     }
 
-    public static void test() {
-        Log.w("CryptoUtils", "test");
-        String text = "Hello world!";
-        String encrypted = encrypt(text);
-        Log.w("CryptoUtils", "encrypted: " + encrypted);
-        String decrypted = decrypt(encrypted);
-        Log.w("CryptoUtils", "decrypted: " + decrypted);
-
-        try {
-            checkKeyIsHardwareBacked();
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-    }
 }

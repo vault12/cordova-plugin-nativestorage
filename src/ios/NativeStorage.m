@@ -101,16 +101,22 @@
 
 		if(reference!=nil)
 		{
-			NSData *encryptedData = [[self getUserDefault] dataForKey:reference];
-            if (encryptedData == nil) {
+            id value = [[self getUserDefault] objectForKey:reference];
+            if (value == nil) {
                 CDVPluginResult* pluginResult = [CDVPluginResult resultWithStatus: CDVCommandStatus_OK messageAsBool:NO];
                 [self.commandDelegate sendPluginResult:pluginResult callbackId: command.callbackId];
             } else {
-                [CryptoUtils decryptWithCipherTextData:encryptedData completion:^(NSString * _Nullable decryptedString) {
-                    BOOL aBoolean = [decryptedString boolValue];
-                    CDVPluginResult* pluginResult = [CDVPluginResult resultWithStatus: CDVCommandStatus_OK messageAsBool:aBoolean];
+                if ([value isKindOfClass:[NSData class]]) {
+                    [CryptoUtils decryptWithCipherTextData:(NSData *)value completion:^(NSString * _Nullable decryptedString) {
+                        BOOL plainValue = [decryptedString boolValue];
+                        CDVPluginResult* pluginResult = [CDVPluginResult resultWithStatus: CDVCommandStatus_OK messageAsBool:plainValue];
+                        [self.commandDelegate sendPluginResult:pluginResult callbackId: command.callbackId];
+                    }];
+                } else {
+                    BOOL plainValue = [value boolValue];
+                    CDVPluginResult* pluginResult = [CDVPluginResult resultWithStatus: CDVCommandStatus_OK messageAsBool:plainValue];
                     [self.commandDelegate sendPluginResult:pluginResult callbackId: command.callbackId];
-                }];
+                }
             }
 		}
 		else
@@ -151,16 +157,22 @@
 		NSString* reference = [command.arguments objectAtIndex:0];
 		if(reference!=nil)
 		{
-            NSData *encryptedData = [[self getUserDefault] dataForKey:reference];
-            if (encryptedData == nil) {
+            id value = [[self getUserDefault] objectForKey:reference];
+            if (value == nil) {
                 CDVPluginResult* pluginResult = [CDVPluginResult resultWithStatus: CDVCommandStatus_OK messageAsNSInteger:0];
                 [self.commandDelegate sendPluginResult:pluginResult callbackId: command.callbackId];
             } else {
-                [CryptoUtils decryptWithCipherTextData:encryptedData completion:^(NSString * _Nullable decryptedString) {
-                    NSInteger anInt = [decryptedString integerValue];
+                if ([value isKindOfClass:[NSData class]]) {
+                    [CryptoUtils decryptWithCipherTextData:(NSData *)value completion:^(NSString * _Nullable decryptedString) {
+                        NSInteger anInt = [decryptedString integerValue];
+                        CDVPluginResult* pluginResult = [CDVPluginResult resultWithStatus: CDVCommandStatus_OK messageAsNSInteger:anInt];
+                        [self.commandDelegate sendPluginResult:pluginResult callbackId: command.callbackId];
+                    }];
+                } else {
+                    NSInteger anInt = [value integerValue];
                     CDVPluginResult* pluginResult = [CDVPluginResult resultWithStatus: CDVCommandStatus_OK messageAsNSInteger:anInt];
                     [self.commandDelegate sendPluginResult:pluginResult callbackId: command.callbackId];
-                }];
+                }
             }
 		}
 		else
@@ -202,16 +214,22 @@
 
 		if(reference!=nil)
 		{
-            NSData *encryptedData = [[self getUserDefault] dataForKey:reference];
-            if (encryptedData == nil) {
+            id value = [[self getUserDefault] objectForKey:reference];
+            if (value == nil) {
                 CDVPluginResult* pluginResult = [CDVPluginResult resultWithStatus: CDVCommandStatus_OK messageAsDouble:0.0];
                 [self.commandDelegate sendPluginResult:pluginResult callbackId: command.callbackId];
             } else {
-                [CryptoUtils decryptWithCipherTextData:encryptedData completion:^(NSString * _Nullable decryptedString) {
-                    double aDouble = [decryptedString doubleValue];
+                if ([value isKindOfClass:[NSData class]]) {
+                    [CryptoUtils decryptWithCipherTextData:(NSData *)value completion:^(NSString * _Nullable decryptedString) {
+                        double aDouble = [decryptedString doubleValue];
+                        CDVPluginResult* pluginResult = [CDVPluginResult resultWithStatus: CDVCommandStatus_OK messageAsDouble:aDouble];
+                        [self.commandDelegate sendPluginResult:pluginResult callbackId: command.callbackId];
+                    }];
+                } else {
+                    double aDouble = [value doubleValue];
                     CDVPluginResult* pluginResult = [CDVPluginResult resultWithStatus: CDVCommandStatus_OK messageAsDouble:aDouble];
                     [self.commandDelegate sendPluginResult:pluginResult callbackId: command.callbackId];
-                }];
+                }
             }
 		}
 		else
@@ -253,15 +271,20 @@
 
 		if(reference!=nil)
 		{
-            NSData *encryptedData = [[self getUserDefault] dataForKey:reference];
-            if (encryptedData == nil) {
+            id value = [[self getUserDefault] objectForKey:reference];
+            if (value == nil) {
                 CDVPluginResult* pluginResult = [CDVPluginResult resultWithStatus: CDVCommandStatus_OK messageAsString:nil];
                 [self.commandDelegate sendPluginResult:pluginResult callbackId: command.callbackId];
             } else {
-                [CryptoUtils decryptWithCipherTextData:encryptedData completion:^(NSString * _Nullable aString) {
-                    CDVPluginResult* pluginResult = [CDVPluginResult resultWithStatus: CDVCommandStatus_OK messageAsString:aString];
+                if ([value isKindOfClass:[NSData class]]) {
+                    [CryptoUtils decryptWithCipherTextData:(NSData *)value completion:^(NSString * _Nullable aString) {
+                        CDVPluginResult* pluginResult = [CDVPluginResult resultWithStatus: CDVCommandStatus_OK messageAsString:aString];
+                        [self.commandDelegate sendPluginResult:pluginResult callbackId: command.callbackId];
+                    }];
+                } else {
+                    CDVPluginResult* pluginResult = [CDVPluginResult resultWithStatus: CDVCommandStatus_OK messageAsString:(NSString *)value];
                     [self.commandDelegate sendPluginResult:pluginResult callbackId: command.callbackId];
-                }];
+                }
             }
 		}
 		else
@@ -306,15 +329,20 @@
 
 		if(reference!=nil)
 		{
-            NSData *encryptedData = [[self getUserDefault] dataForKey:reference];
-            if (encryptedData == nil) {
+            id value = [[self getUserDefault] objectForKey:reference];
+            if (value == nil) {
                 CDVPluginResult* pluginResult = [CDVPluginResult resultWithStatus: CDVCommandStatus_ERROR messageAsInt:2]; //Ref not found
                 [self.commandDelegate sendPluginResult:pluginResult callbackId: command.callbackId];
             } else {
-                [CryptoUtils decryptWithCipherTextData:encryptedData completion:^(NSString * _Nullable decryptedString) {
-                    CDVPluginResult* pluginResult = [CDVPluginResult resultWithStatus: CDVCommandStatus_OK messageAsString:decryptedString];
+                if ([value isKindOfClass:[NSData class]]) {
+                    [CryptoUtils decryptWithCipherTextData:(NSData *)value completion:^(NSString * _Nullable decryptedString) {
+                        CDVPluginResult* pluginResult = [CDVPluginResult resultWithStatus: CDVCommandStatus_OK messageAsString:decryptedString];
+                        [self.commandDelegate sendPluginResult:pluginResult callbackId: command.callbackId];
+                    }];
+                } else {
+                    CDVPluginResult* pluginResult = [CDVPluginResult resultWithStatus: CDVCommandStatus_OK messageAsString:(NSString *)value];
                     [self.commandDelegate sendPluginResult:pluginResult callbackId: command.callbackId];
-                }];
+                }
             }
 		}
 		else

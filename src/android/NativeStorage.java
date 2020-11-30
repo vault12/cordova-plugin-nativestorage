@@ -38,6 +38,8 @@ public class NativeStorage extends CordovaPlugin {
         String PREFS_NAME = preferences.getString("NativeStorageSharedPreferencesName", "NativeStorage");
         sharedPref = cordova.getActivity().getSharedPreferences(PREFS_NAME, Activity.MODE_PRIVATE);
         editor = sharedPref.edit();
+
+        CryptoUtils.checkKeyIsHardwareBacked();
     }
 
     public boolean execute(final String action, final JSONArray args, final CallbackContext callbackContext) throws JSONException {
@@ -103,11 +105,16 @@ public class NativeStorage extends CordovaPlugin {
             /* getting arguments */
                         String ref = args.getString(0);
                         //System.out.println("Receveived reference: " + ref);
-                        String encrypted = sharedPref.getString(ref, "");
-                        if (encrypted.isEmpty()) {
-                            callbackContext.error(String.valueOf(false));
-                        } else {
-                            Boolean bool = Boolean.parseBoolean(CryptoUtils.decrypt(encrypted));
+                        try {
+                            String encrypted = sharedPref.getString(ref, "");
+                            if (encrypted.isEmpty()) {
+                                callbackContext.success(String.valueOf(false));
+                            } else {
+                                Boolean bool = Boolean.parseBoolean(CryptoUtils.decrypt(encrypted));
+                                callbackContext.success(String.valueOf(bool));
+                            }
+                        } catch (ClassCastException e) {
+                            Boolean bool = sharedPref.getBoolean(ref, false);
                             callbackContext.success(String.valueOf(bool));
                         }
                     } catch (Exception e) {
@@ -146,11 +153,16 @@ public class NativeStorage extends CordovaPlugin {
             /* getting arguments */
                         String ref = args.getString(0);
                         //System.out.println("Receveived reference: "+ref);
-                        String encrypted = sharedPref.getString(ref, "");
-                        if (encrypted.isEmpty()) {
-                            callbackContext.success(-1);
-                        } else {
-                            int anInt = Integer.parseInt(CryptoUtils.decrypt(encrypted));
+                        try {
+                            String encrypted = sharedPref.getString(ref, "");
+                            if (encrypted.isEmpty()) {
+                                callbackContext.success(-1);
+                            } else {
+                                int anInt = Integer.parseInt(CryptoUtils.decrypt(encrypted));
+                                callbackContext.success(anInt);
+                            }
+                        } catch (ClassCastException e) {
+                            int anInt = sharedPref.getInt(ref, -1);
                             callbackContext.success(anInt);
                         }
 
@@ -191,12 +203,17 @@ public class NativeStorage extends CordovaPlugin {
             /* getting arguments */
                         String ref = args.getString(0);
                         //System.out.println("Receveived reference: " + ref);
-                        String encrypted = sharedPref.getString(ref, "");
-                        if (encrypted.isEmpty()) {
-                            callbackContext.success(Double.toString(-1.0));
-                        } else {
-                            double f = Double.parseDouble(CryptoUtils.decrypt(encrypted));
-                            callbackContext.success(Double.toString(f));
+                        try {
+                            String encrypted = sharedPref.getString(ref, "");
+                            if (encrypted.isEmpty()) {
+                                callbackContext.success(Double.toString(-1.0));
+                            } else {
+                                double f = Double.parseDouble(CryptoUtils.decrypt(encrypted));
+                                callbackContext.success(Double.toString(f));
+                            }
+                        } catch (ClassCastException e) {
+                            float f = sharedPref.getFloat(ref, (float) -1.0);
+                            callbackContext.success(Float.toString(f));
                         }
                     } catch (Exception e) {
                         Log.e(TAG, "GetFloat failed :", e);
@@ -238,8 +255,12 @@ public class NativeStorage extends CordovaPlugin {
                         if (encrypted.isEmpty()) {
                             callbackContext.success("null"); // I have really no idea WHY?? but this was the existing behavior
                         } else {
-                            String s = CryptoUtils.decrypt(encrypted);
-                            callbackContext.success(s);
+                            if (CryptoUtils.isCypherText(encrypted)) {
+                                String s = CryptoUtils.decrypt(encrypted);
+                                callbackContext.success(s);
+                            } else {
+                                callbackContext.success(encrypted);
+                            }
                         }
                     } catch (Exception e) {
                         Log.e(TAG, "GetString failed :", e);
@@ -337,8 +358,12 @@ public class NativeStorage extends CordovaPlugin {
                         if (encrypted.equals("nativestorage_null")) {
                             callbackContext.error(2);  // item not found
                         } else {
-                            String s = CryptoUtils.decrypt(encrypted);
-                            callbackContext.success(s);
+                            if (CryptoUtils.isCypherText(encrypted)) {
+                                String s = CryptoUtils.decrypt(encrypted);
+                                callbackContext.success(s);
+                            } else {
+                                callbackContext.success(encrypted);
+                            }
                         }
                     } catch (Exception e) {
                         Log.e(TAG, "getItem failed :", e);
