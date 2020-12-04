@@ -6,22 +6,18 @@ import LocalAuthentication
 @objc(CryptoUtils)
 class CryptoUtils: NSObject {
     
-    private static let keyAlias = "vault12.cryptonativestorage.keyalias.10001"
-    
-    private static let lock = NSLock()
+    private static let keyAlias = "vault12.cryptonativestorage.keyalias.1001"
     
     private static func makeAndStoreKey(name: String,
-                                        requiresUserAuth: Bool = false) throws -> SecKey {
-
+                                        requiresBiometry: Bool = false) throws -> SecKey {
         let flags: SecAccessControlCreateFlags
         if #available(iOS 11.3, *) {
-            flags = requiresUserAuth ?
+            flags = requiresBiometry ?
                 [.privateKeyUsage, .biometryCurrentSet] : .privateKeyUsage
         } else {
-            flags = requiresUserAuth ?
+            flags = requiresBiometry ?
                 [.privateKeyUsage, .touchIDCurrentSet] : .privateKeyUsage
         }
-        
         let access =
             SecAccessControlCreateWithFlags(kCFAllocatorDefault,
                                             kSecAttrAccessibleAfterFirstUnlock,
@@ -72,7 +68,7 @@ class CryptoUtils: NSObject {
             return key
         } else {
             do {
-                return try makeAndStoreKey(name: name, requiresUserAuth: true)
+                return try makeAndStoreKey(name: name, requiresBiometry: false)
             } catch {
                 print("\(error.localizedDescription)")
                 return nil
@@ -110,24 +106,18 @@ class CryptoUtils: NSObject {
     @objc
     static func decrypt(cipherTextData: Data, completion: @escaping (String?) -> Void) -> Void {
         
-        // prevent "Can't decrypt: Canceled by another authentication."
-        lock.lock()
-        
-        let completeWithError: (String) -> Void = { errorMessage in
-            print(errorMessage)
-            lock.unlock()
-            completion(nil)
-        }
-        
         guard let keyItem = getKey(name: keyAlias) else {
-            completeWithError("Can't get key item")
+            print("Can't get key item")
+            completion(nil)
             return
         }
+
         
         // cipherTextData is our encrypted data
         let algorithm: SecKeyAlgorithm = .eciesEncryptionCofactorVariableIVX963SHA256AESGCM
         guard SecKeyIsAlgorithmSupported(keyItem, .decrypt, algorithm) else {
-            completeWithError("Algorithm not supported")
+            print("Algorithm not supported")
+            completion(nil)
             return
         }
 
@@ -142,11 +132,11 @@ class CryptoUtils: NSObject {
                                                           &error) as Data?
             DispatchQueue.main.async {
                 guard clearTextData != nil else {
-                    completeWithError("Can't decrypt: \((error!.takeRetainedValue() as Error).localizedDescription)")
+                    print("Can't decrypt: \((error!.takeRetainedValue() as Error).localizedDescription)")
+                    completion(nil)
                     return
                 }
                 let clearText = String(decoding: clearTextData!, as: UTF8.self)
-                lock.unlock()
                 completion(clearText)
             }
         }
