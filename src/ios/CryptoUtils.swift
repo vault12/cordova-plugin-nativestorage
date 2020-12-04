@@ -6,7 +6,7 @@ import LocalAuthentication
 @objc(CryptoUtils)
 class CryptoUtils: NSObject {
     
-    private static let keyAlias = "vault12.cryptonativestorage.keyalias.1001"
+    private static let keyAlias = "vault12.cryptonativestorage.keyalias"
     
     private static func makeAndStoreKey(name: String,
                                         requiresBiometry: Bool = false) throws -> SecKey {

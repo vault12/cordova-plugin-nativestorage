@@ -26,7 +26,7 @@ import javax.crypto.spec.GCMParameterSpec;
 public class CryptoUtils {
 
     private static final String ANDROID_KEY_STORE_PROVIDER = "AndroidKeyStore";
-    private static final String KEY_ALIAS = "vault12.cryptonativestorage.keyalias.1";
+    private static final String KEY_ALIAS = "vault12.cryptonativestorage.keyalias";
     private static final String DELIMITER = "@~@~@";
 
     private static SecretKey generateKey() throws NoSuchProviderException, NoSuchAlgorithmException, InvalidAlgorithmParameterException {
@@ -36,8 +36,6 @@ public class CryptoUtils {
                 .setBlockModes(KeyProperties.BLOCK_MODE_GCM)
                 .setEncryptionPaddings(KeyProperties.ENCRYPTION_PADDING_NONE)
                 .setRandomizedEncryptionRequired(true)
-                // .setUserAuthenticationRequired(true)
-                // .setUserAuthenticationValidityDurationSeconds(-1)
                 .build();
         keyGenerator.init(keyGenParameterSpec);
         final SecretKey secretKey = keyGenerator.generateKey();
