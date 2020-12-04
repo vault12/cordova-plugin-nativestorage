@@ -1,17 +1,7 @@
 {
-    "name": "cordova-plugin-nativestorage",
+    "name": "@vault12/plugin-cryptonativestorage",
     "version": "0.0.1",
     "description": "Crypto Native key-value storage in Android and iOS",
-    "cordova": {
-        "id": "cordova-plugin-nativestorage",
-        "platforms": [
-            "android",
-            "ios",
-            "browser",
-            "windows",
-            "osx"
-        ]
-    },
     "scripts": {
         "test": "npm run jshint",
         "jshint": "jshint www && jshint tests"
